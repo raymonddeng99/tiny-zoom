@@ -132,9 +132,6 @@ remoteVideo.addEventListener('play', () => {
 
       var emoji_expression;
 
-      console.log('detection: ', detection)
-      console.log('predicted expression: ', predicted_expression)
-
       switch(predicted_expression){
         case 'angry': emoji_expression = 'angry 😡'; break;
         case 'disgusted': emoji_expression = 'disgusted 😬'; break;
@@ -144,9 +141,6 @@ remoteVideo.addEventListener('play', () => {
         case 'sad': emoji_expression = 'sad 😥'; break;
         case 'surprised': emoji_expression = 'surprised 😯'; break;
       }
-
-
-      console.log('emoji_expression: ', emoji_expression)
 
       document.getElementById('output').innerHTML = emoji_expression;
 
