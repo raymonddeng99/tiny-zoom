@@ -1,2 +1,2 @@
 # tiny-zoom
-hybrid peer-to-peer video calls + centralized ml
+decentralized peer-to-peer video calls + in-browser ml
