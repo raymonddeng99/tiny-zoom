@@ -1,3 +1,10 @@
+Promise.all([
+  faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+  faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+  faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
+  faceapi.nets.faceExpressionNet.loadFromUri('/models')
+]);
+
 // Generate random room name if needed
 if (!location.hash) {
   location.hash = Math.floor(Math.random() * 0xFFFFFF).toString(16);
@@ -16,8 +23,7 @@ const configuration = {
 let room;
 let pc;
 
-
-function onSuccess() {};
+function onSuccess() { };
 function onError(error) {
   console.error(error);
 };
@@ -79,12 +85,14 @@ function startWebRTC(isOfferer) {
   navigator.mediaDevices.getUserMedia({
     audio: true,
     video: true,
-  }).then(stream => {
+  }).then(async stream => {
+
     // Display your local video in #localVideo element
     localVideo.srcObject = stream;
+
     // Add your stream to be sent to the conneting peer
     stream.getTracks().forEach(track => pc.addTrack(track, stream));
-  }, onError);
+  }, onError)
 
   // Listen to signaling data from Scaledrone
   room.on('data', (message, client) => {
@@ -109,6 +117,42 @@ function startWebRTC(isOfferer) {
     }
   });
 }
+
+remoteVideo.addEventListener('play', () => {
+  const video = document.getElementById('remoteVideo')
+  const canvas = faceapi.createCanvasFromMedia(video)
+
+  setInterval(async () => {
+    const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions()
+
+    // only do stuff if emotion is detected
+    if (typeof detection !== 'undefined' && Object.keys(detection).length > 0){
+      // get predicted expression
+      const predicted_expression = Object.keys(detection['expressions']).reduce(function(a, b){ return detection['expressions'][a] > detection['expressions'][b] ? a : b });
+
+      var emoji_expression;
+
+      console.log('detection: ', detection)
+      console.log('predicted expression: ', predicted_expression)
+
+      switch(predicted_expression){
+        case 'angry': emoji_expression = 'angry 😡'; break;
+        case 'disgusted': emoji_expression = 'disgusted 😬'; break;
+        case 'fearful': emoji_expression = 'fearful 😨'; break;
+        case 'happy': emoji_expression = 'happy 😀'; break;
+        case 'neutral': emoji_expression = 'neutral 😶'; break;
+        case 'sad': emoji_expression = 'sad 😥'; break;
+        case 'surprised': emoji_expression = 'surprised 😯'; break;
+      }
+
+
+      console.log('emoji_expression: ', emoji_expression)
+
+      document.getElementById('output').innerHTML = emoji_expression;
+
+    }
+  }, 100)
+})
 
 function localDescCreated(desc) {
   pc.setLocalDescription(
